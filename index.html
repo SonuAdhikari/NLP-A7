@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+</head>
+<body>
+    <h1>Chatbot</h1>
+    <div id="chat-container">
+        <div id="chat"></div>
+        <input type="text" id="user-input" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var userInput = document.getElementById('user-input').value;
+            document.getElementById('chat').innerHTML += '<p><strong>You:</strong> ' + userInput + '</p>';
+            document.getElementById('user-input').value = '';
+
+            // Send user message to backend
+            fetch('/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display bot response and source documents
+                document.getElementById('chat').innerHTML += '<p><strong>Chatbot:</strong> ' + data.response + '</p>';
+                if (data.documents.length > 0) {
+                    document.getElementById('chat').innerHTML += '<p><strong>Source Documents:</strong></p>';
+                    data.documents.forEach(doc => {
+                        document.getElementById('chat').innerHTML += '<p><a href="' + doc.link + '" target="_blank">' + doc.title + '</a></p>';
+                    });
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
